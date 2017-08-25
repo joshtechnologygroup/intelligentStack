@@ -1,0 +1,2 @@
+class PostFeedback < ApplicationRecord
+end

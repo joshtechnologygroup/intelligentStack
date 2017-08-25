@@ -1,0 +1,2 @@
+class TagSynonym < ApplicationRecord
+end
