@@ -1,0 +1,23 @@
+defaults: &defaults
+  host: localhost
+  port: 6390
+
+production:
+  <<: *defaults
+  db_index: 0
+
+staging:
+  <<: *defaults
+  db_index: 0
+
+integration:
+  <<: *defaults
+  db_index: 0
+
+development:
+  <<: *defaults
+  db_index: 1
+
+test:
+  <<: *defaults
+  db_index: 2
