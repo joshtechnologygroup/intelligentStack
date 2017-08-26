@@ -9,8 +9,11 @@ class User < ApplicationRecord
 
     user_answers = user_answers.flatten
     user_answers.each do |answer|
-        question_id = answer["question_id"]
-        question = fetch_user_question(question_id)
+      question_id = answer["question_id"]
+      question = fetch_user_question(question_id)
+      question_keywords = fetch_question_keywords(question["body"]).flatten
+      question_keywords = question_keywords.reject {|v| question_keywords.index(v).odd?}
+      question_keywords = valid_question_keywords(question_keywords)
         UserPerformace.create(
           user_id: user_so_id.to_s,
           question_id: question_id.to_s,
@@ -20,10 +23,11 @@ class User < ApplicationRecord
           upvotes: answer["up_vote_count"].to_i,
           downvotes: answer["down_vote_count"].to_i,
           accepted: answer["is_accepted"],
-          view_count: question["view_count"].to_i
+          view_count: question["view_count"].to_i,
+          question_keywords: question_keywords
         )
-
-        question["tags"].each do |tag|
+        all_tags = question["tags"] | question_keywords
+        all_tags.each do |tag|
           weight = 0
           weight += 5 if answer["up_vote_count"].to_i > 0
           weight -= 1 if answer["down_vote_count"].to_i > 0
@@ -55,6 +59,28 @@ class User < ApplicationRecord
   end
 
   def self.fetch_question_keywords(question_body)
+    question_body = Nokogiri::HTML(question_body).text.gsub("\n", '').to_s
+    url = "https://apis.paralleldots.com/keywords?q=#{question_body}&apikey=OLdsBf7547Eul5AKmElfoGIk5YhMqe29HfovPT7fSBQ"
+    url = URI.encode(url)
+    JSON.parse(RestClient.post(url, headers={}))
+  rescue => e
     []
+  end
+
+  def self.valid_question_keywords(suggestions)
+    valid_keywords = []
+    keywords = []
+    suggestions.each do |suggestion|
+      suggestion.split(' ').each do |keyword|
+        keywords.push(keyword)
+      end
+    end
+
+    keywords.each do |keyword|
+      tag_name = TagSynonym.find_by_sourcetagname(keyword).try(:targettagname)
+      target_tag = Tag.find_by_tagname(tag_name || keyword)
+      valid_keywords.push(target_tag.tagname) if target_tag
+    end
+    valid_keywords
   end
 end

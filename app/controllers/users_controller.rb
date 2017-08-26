@@ -5,7 +5,6 @@ class UsersController < ApplicationController
 
   def get_questions
     # `python lib/scripts/ordering.py`
-    # create_skill_sets
-    Question.get_questions(656769)
+    create_skill_sets
   end
 end
