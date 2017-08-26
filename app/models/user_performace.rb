@@ -1,0 +1,2 @@
+class UserPerformace < ApplicationRecord
+end
