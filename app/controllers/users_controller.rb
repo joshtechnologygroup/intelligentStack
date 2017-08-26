@@ -3,6 +3,11 @@ class UsersController < ApplicationController
     User.generate_user_performance_data(1,1, 656769)
   end
 
+  def get_questions
+    # `python lib/scripts/ordering.py`
+    create_skill_sets
+  end
+
   private
 
   def fetch_user_answers(user_so_id, page)
