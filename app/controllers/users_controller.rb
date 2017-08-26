@@ -29,7 +29,7 @@ class UsersController < ApplicationController
           weight -= 1 if answer["down_vote_count"].to_i > 0
           weight += 5 if ((answer["up_vote_count"].to_i - answer["down_vote_count"].to_i) * 1000 / question["view_count"].to_i > 0)
           weight += 2 if answer["is_accepted"]
-          tag_name = .find_by_sourcetagname(tag).try(:targettagname)
+          tag_name = TagSynonym.find_by_sourcetagname(tag).try(:targettagname)
           target_tag = Tag.find_by_tagname(tag_name || tag)
           tag_score = TagScore.where(user_id: user_so_id, tag_id: target_tag.id).first
           if(tag_score)
@@ -40,6 +40,11 @@ class UsersController < ApplicationController
           end
         end
     end
+  end
+
+  def get_questions
+    # `python lib/scripts/ordering.py`
+    create_skill_sets
   end
 
   private
