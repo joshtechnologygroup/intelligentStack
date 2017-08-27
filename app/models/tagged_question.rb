@@ -23,10 +23,19 @@ class TaggedQuestion < ApplicationRecord
         users.each do |user|
           User.generate_user_performance_data(1, 1, user) unless TaggedQuestion.find(user_id: user)
         end
+
+        question_rank_weights = $redis.hgetall('question_rank_weights')
+        score_weight = question_rank_weights['score'].to_i
+        answers_weight = question_rank_weights['answers'].to_i
+        max_score_weight = question_rank_weights['max_score'].to_i
+        favorites_weight = question_rank_weights['favorites'].to_i
+        upvote_weight = question_rank_weights['upvote'].to_i
+        downvote_weight = question_rank_weights['downvote'].to_i
+
         query = "
-        INSERT INTO suggested_questions SELECT #{user_id}, question_id, link, COALESCE(b.score, 0)* 10 + COALESCE(answer_count, 0) * 5 +
-        COALESCE(max_score, 0) * 2 + COALESCE(favorite_count, 0) * 5 + COALESCE(up_vote_count,0)*10
-        - COALESCE(down_vote_count, 0)*100 as sort_column FROM ( select * from questions WHERE (tags LIKE '%ruby%' and accepted_answer_id is NULL) )a JOIN (select * from tag_scores where tag_id ='12') b on a.\"owner.user_id\"=b.user_id::BIGINT WHERE WHERE b.score is NULL or b.score <= #{TagScore.where(tag_id: tag.tag_id,user_id: user_id).first.score} ;
+        INSERT INTO suggested_questions SELECT #{user_id}, question_id, link, COALESCE(b.score, 0)* #{score_weight} + COALESCE(answer_count, 0) * #{answers_weight} +
+        COALESCE(max_score, 0) * #{max_score_weight} + COALESCE(favorite_count, 0) * #{favorites_weight} + COALESCE(up_vote_count,0)*#{upvote_weight}
+        - COALESCE(down_vote_count, 0)*#{downvote_weight} as sort_column FROM ( select * from questions WHERE (tags LIKE '%ruby%' and accepted_answer_id is NULL) )a JOIN (select * from tag_scores where tag_id ='12') b on a.\"owner.user_id\"=b.user_id::BIGINT WHERE WHERE b.score is NULL or b.score <= #{TagScore.where(tag_id: tag.tag_id,user_id: user_id).first.score} ;
         select * from q_test1 order by sort_column desc;"
         ActiveRecord::Base.connection.execute(query)
         break

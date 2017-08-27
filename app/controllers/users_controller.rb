@@ -5,7 +5,7 @@ class UsersController < ApplicationController
 
   def get_questions
     # `python lib/scripts/ordering.py`
-    # User.generate_user_performance_data(1,1, 6534673)
-    TaggedQuestion.get_question(6534673)
+    Thread.new { User.generate_user_performance_data(1,1, 6534673) }
+    Thread.new { puts 'different thread'}
   end
 end

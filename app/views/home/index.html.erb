@@ -1,24 +1,5 @@
-Question:<br><%= link_to(@title, @link) %>
+Questions:<br><%= link_to(@title, @link) %>
 
-
-<br>
-<br>
-<br>
-<br>
-<br>
-
-unanswered post
-<br>
-<%= @unanswered_post %>
-<br>
-link
-<br>
-<%= @link %>
-<br>
-id
-<br>
-<%= @id %>
-<br>
-redis_questions
-<br>
-<%= @redis_quesions %>
+<% @questions.each do |q| %>
+  <%= link_to(q.title, q.link) %><br>
+<% end %>

@@ -30,10 +30,10 @@ class User < ApplicationRecord
         all_tags = question["tags"] | question_keywords
         all_tags.each do |tag|
           weight = 0
-          weight += 5 if answer["up_vote_count"].to_i > 0
-          weight -= 1 if answer["down_vote_count"].to_i > 0
-          weight += 5 if ((answer["up_vote_count"].to_i - answer["down_vote_count"].to_i) * 1000 / question["view_count"].to_i > 0)
-          weight += 2 if answer["is_accepted"]
+          weight += $redis.hget('skill_weights','upvote').to_i if answer["up_vote_count"].to_i > 0
+          weight += $redis.hget('skill_weights','downvote') if answer["down_vote_count"].to_i > 0
+          weight += $redis.hget('skill_weights','score_to_view') if ((answer["up_vote_count"].to_i - answer["down_vote_count"].to_i) * 1000 / question["view_count"].to_i > 0)
+          weight += $redis.hget('skill_weights','is_accepted') if answer["is_accepted"]
           tag_name = TagSynonym.find_by_sourcetagname(tag).try(:targettagname)
           target_tag = Tag.find_by_tagname(tag_name || tag)
           tag_score = TagScore.where(user_id: user_so_id, tag_id: target_tag.id).first

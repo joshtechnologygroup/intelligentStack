@@ -2,11 +2,14 @@ require 'stack_api'
 
 class HomeController < ApplicationController
   def index
-    @unanswered_post = StackApi.get_unanswered_post
-    @title = @unanswered_post['title']
-    @link = @unanswered_post['link']
-    @id = @unanswered_post['question_id']
-    $redis.hset(@current_user_id, @id, Time.now.to_i)
+    @questions = TaggedQuestion.limit(5)
+
+    current = Time.now.to_i
+    ids_with_timestamp = @questions.pluck(:question_id).join(",#{current},").concat(",#{current}").split(',')
+
+    Thread.new { $redis.hset(@current_user_id, *ids_with_timestamp) }
+
+    Thread.new { adjust_weights }
   end
 
   private
@@ -33,7 +36,7 @@ class HomeController < ApplicationController
 
     answers = all_answers(q_ids)
 
-    exit if answers.blank?
+    return if answers.blank?
 
     skill_weights = $redis.hgetall('skill_weights')
     question_rank_weights = $redis.hgetall('question_rank_weights')
