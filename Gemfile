@@ -36,6 +36,7 @@ gem 'jbuilder', '~> 2.5'
 
 gem 'typhoeus'
 gem 'jquery-rails'
+gem 'daemons'
 
 gem 'redis'
 
