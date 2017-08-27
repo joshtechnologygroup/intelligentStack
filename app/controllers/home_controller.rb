@@ -6,8 +6,7 @@ class HomeController < ApplicationController
     @title = @unanswered_post['title']
     @link = @unanswered_post['link']
     @id = @unanswered_post['question_id']
-    @redis_quesions = $redis.hgetall('questions')
-    $redis.hset('questions', @id, Time.now.to_i)
+    $redis.hset(@current_user_id, @id, Time.now.to_i)
   end
 
   private
@@ -24,7 +23,7 @@ class HomeController < ApplicationController
 
   def adjust_weights
     current = Time.now.to_i
-    questions_to_time =  $redis.hgetall('questions')
+    questions_to_time =  $redis.hgetall(@current_user_id)
     q_ids = questions_to_time.select{ |k,v| v.to_i > current - 2.months}.keys
 
     #delete stale questions i.e. which are older than 2 months
