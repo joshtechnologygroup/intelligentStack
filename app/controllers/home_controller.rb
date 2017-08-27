@@ -2,12 +2,12 @@ require 'stack_api'
 
 class HomeController < ApplicationController
   def index
-    @questions = TaggedQuestion.limit(5)
+    @questions = SuggestedQuestion.where(user_id: @current_user_id).order('max_score DESC').limit(5)
 
     current = Time.now.to_i
     ids_with_timestamp = @questions.pluck(:question_id).join(",#{current},").concat(",#{current}").split(',')
 
-    Thread.new { $redis.hset(@current_user_id, *ids_with_timestamp) }
+    Thread.new { $redis.hmset(@current_user_id, *ids_with_timestamp) }
 
     Thread.new { adjust_weights }
   end
@@ -21,7 +21,7 @@ class HomeController < ApplicationController
     http.use_ssl = true
     res = http.get(uri.request_uri)
     answers = JSON.parse(res.body)['items']
-    (answers || []).select{ |k,v| k['owner']['user_id'] == 157247 }
+    (answers || []).select{ |k,v| k['owner']['user_id'] == @current_user_id }
   end
 
   def adjust_weights
@@ -56,7 +56,7 @@ class HomeController < ApplicationController
 
       observed_score = observed_upvote_skill_weight + observed_downvote_skill_weight + observed_score_to_view_skill_weight + observed_is_accepted_skill_weight
       actual_score = (observed_score - score).abs * (score / time_diff)
-      actual_score = observed_score * (score / time_diff) if is_accepted == 'true'
+      actual_score = observed_score * ((observed_score - score).abs / time_diff) if is_accepted == 'true'
 
       diff = actual_score - observed_score
 

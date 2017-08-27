@@ -49,7 +49,7 @@ class User < ApplicationRecord
   end
 
   def self.fetch_user_answers(user_so_id, page)
-    url = "https://api.stackexchange.com/2.2/users/#{user_so_id}/answers?page=#{page}&pagesize=100&order=desc&sort=activity&site=stackoverflow&filter=!-*f(6t*ZbDla&access_token=0bwAYzM3ae4ZzQs1o5R73Q))&key=*aiCyheCAqPgs8YUmUVEzA(("
+    url = "https://api.stackexchange.com/2.2/users/#{user_so_id}/answers?page=#{page}&pagesize=15&order=desc&sort=activity&site=stackoverflow&filter=!-*f(6t*ZbDla&access_token=0bwAYzM3ae4ZzQs1o5R73Q))&key=*aiCyheCAqPgs8YUmUVEzA(("
     JSON.parse(RestClient.get(url, headers={}).body)["items"]
   end
 

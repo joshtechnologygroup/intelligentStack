@@ -1,5 +1,9 @@
-Questions:<br><%= link_to(@title, @link) %>
-
-<% @questions.each do |q| %>
-  <%= link_to(q.title, q.link) %><br>
-<% end %>
+<div align="center">
+  <h2>Hi <%= @current_user_id %>! Here are some questions you can answer:</h2>
+    <br>
+  <h2>
+  <% @questions.each do |q| %>
+    <li><%= link_to(q.title, q.link) %></li>
+  <% end %>
+  </h2>
+</div>
